@@ -97,12 +97,13 @@ def construct_unique_key(baseurl, params):
         the unique key as a string
     '''
     #TODO Implement function
-    unique_key = baseurl
-    for key in params:
-        if type(params[key]) == int:
-            unique_key = unique_key+key.lower()+str(params[key]).lower()
-        else:
-            unique_key = unique_key+key.lower()+params[key].lower()
+    param_strings = []
+    connector = '_'
+    for k in params.keys():
+    #    param_strings.append((f'{k}_{params[k]}').lower())
+        param_strings.append(f'{k}_{params[k]}')
+    param_strings.sort()
+    unique_key = baseurl + connector +  connector.join(param_strings)
     return unique_key
 
 
@@ -125,8 +126,9 @@ def make_request(baseurl, params):
     #TODO Implement function
     response = requests.get(baseurl, params=params, auth=oauth)
     results = response.json()
-    tweets_data = results['statuses']
-    return tweets_data
+    #tweets_data = results['statuses']
+    #return tweets_data
+    return results
 
 
 def make_request_with_cache(baseurl, hashtag, count):
@@ -158,6 +160,7 @@ def make_request_with_cache(baseurl, hashtag, count):
         JSON
     '''
     #TODO Implement function
+    CACHE_DICT = open_cache()
     params = {'q': hashtag, 'count': count}
     unique_key = construct_unique_key(baseurl, params)
     if unique_key in CACHE_DICT:
@@ -192,7 +195,8 @@ def find_most_common_cooccurring_hashtag(tweet_data, hashtag_to_ignore):
     '''
     # TODO: Implement function
     ht_dict = {}
-    for tweet in tweet_data:
+    #for tweet in tweet_data:
+    for tweet in tweet_data['statuses']:
         for cohashtag in tweet['entities']['hashtags']:
             if cohashtag['text'].lower() != hashtag_to_ignore[1:len(hashtag_to_ignore)].lower():
                 if cohashtag['text'].lower() in ht_dict:
@@ -200,7 +204,8 @@ def find_most_common_cooccurring_hashtag(tweet_data, hashtag_to_ignore):
                 else:
                     ht_dict[cohashtag['text'].lower()] = 1
     tuple_list_sorted = sorted(ht_dict.items(), key=lambda item: item[1], reverse=True)
-    return "#"+tuple_list_sorted[0][0]
+    #return "#"+tuple_list_sorted[0][0]
+    return tuple_list_sorted[0][0]
     ''' Hint: In case you're confused about the hashtag_to_ignore
     parameter, we want to ignore the hashtag we queried because it would
     definitely be the most occurring hashtag, and we're trying to find
